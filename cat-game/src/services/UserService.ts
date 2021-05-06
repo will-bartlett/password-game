@@ -33,7 +33,7 @@ export default class UserService {
         return user as User
     }
 
-    public async getSecurityQuestions() {
+    public async getSecurityQuestions(): Promise<{ [key: string]: string }> {
         return {
             "favPet": "What is your pet's name?",
             "favFood": "What is your favorite food?",

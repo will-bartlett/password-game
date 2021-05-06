@@ -14,7 +14,7 @@ import User from './models/User';
   },
 })
 export default class App extends Vue {
-  user?: User = null;
+  user: User | null = null;
 
   setUser(user: User) {
     this.user = user;
