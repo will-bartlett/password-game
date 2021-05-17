@@ -40,6 +40,13 @@
                 "/./~/*": "${webRoot}/node_modules/*"
             },
             "preLaunchTask": "npm: serve - cat-game"
+        },
+        {
+            "name": "Debug backend-api",
+            "type": "node",
+            "request": "attach",
+            "port": 9229,
+            "preLaunchTask": "func: host start"
         }
     ]
 }

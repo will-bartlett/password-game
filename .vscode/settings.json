@@ -10,5 +10,11 @@
     },
     "vetur.format.defaultFormatter.ts": "vscode-typescript",
     "vetur.experimental.templateInterpolationService": true,
-    "vetur.format.defaultFormatter.html": "js-beautify-html"
+    "vetur.format.defaultFormatter.html": "js-beautify-html",
+    "azureFunctions.deploySubpath": "backend-api",
+    "azureFunctions.postDeployTask": "npm install",
+    "azureFunctions.projectLanguage": "TypeScript",
+    "azureFunctions.projectRuntime": "~3",
+    "debug.internalConsoleOptions": "neverOpen",
+    "azureFunctions.preDeployTask": "npm prune"
 }

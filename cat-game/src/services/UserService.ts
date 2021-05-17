@@ -1,19 +1,11 @@
 import { sha256 } from 'js-sha256'
-import User from '../models/User'
-
-interface UserWithSecurityAttrs extends User {
-    passwordHash: string,
-    securityAnswers: { [key: string]: string };
-}
+import { User, UserWithSecurityAttrs } from "../../../backend-api/models/User";
+import appsettings from "../appsettings.json";
 
 export default class UserService {
 
-    public async clear() {
-        localStorage.clear();
-    }
-
     public async createUser(user: User, password: string, securityAnswers: { [key: string]: string }) {
-        if (localStorage.getItem(this.makeUserStorageKey(user.username)) !== null) {
+        if ((await this.retrieveUser(user.username)) !== null) {
             throw new Error("That username is already taken.");
         }
         Object.keys(securityAnswers).forEach(k => securityAnswers[k] = this.hashValue(securityAnswers[k]));
@@ -58,23 +50,40 @@ export default class UserService {
         return user! as User;
     }
 
+    // Obviously, the current implementations of persistUser and storeUser aren't secure production-style code
+    // The idea is just to build a simple demonstrate and not actually worry about that for now
+
     private async persistUser(user: UserWithSecurityAttrs) {
-        localStorage.setItem(
-            this.makeUserStorageKey(user.username),
-            JSON.stringify(user)
-        )
+        const resp = await fetch(this.getApiUrl("updateUser"), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(user)
+        });
+        if(!resp.ok) {
+            throw new Error("Failure while persisting user to remote store.")
+        }
     }
 
     private async retrieveUser(username: string) {
-        const userJson = localStorage.getItem(this.makeUserStorageKey(username));
-        return userJson ? JSON.parse(userJson) as UserWithSecurityAttrs : null;
-    }
-
-    private makeUserStorageKey(username: string) {
-        return `userdata_${username}`
+        const resp = await fetch(this.getApiUrl("getUser", { username }));
+        if(!resp.ok) {
+            if(resp.status === 404) {
+                return null;
+            } else {
+                throw new Error("Failure while getting user from remote store.");
+            }
+        }
+        return (await resp.json()) as UserWithSecurityAttrs;
     }
 
     private hashValue(password: string) {
         return sha256(password)
+    }
+
+    private getApiUrl(path: string, queryParams: { [param: string]: string } = {}) {
+        path = path.startsWith('/') ? path.substring(1) : path;
+        const params = new URLSearchParams();
+        Object.keys(queryParams).forEach(p => params.set(p, queryParams[p]));
+        return `${appsettings.backendApiBaseUrl}api/${path}?${params.toString()}`;
     }
 }

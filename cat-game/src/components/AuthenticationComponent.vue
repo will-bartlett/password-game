@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
-import User from "../models/User";
+import { User } from "../../../backend-api/models/User";
 import LoginForm from "./LoginForm.vue"
 import RegistrationForm from "./RegistrationForm.vue"
 import PasswordResetForm from "./PasswordResetForm.vue"
@@ -33,14 +33,17 @@ export default class AuthenticationComponent extends Vue {
 </script>
 
 <template>
-  <div class="d-flex h-100 justify-content-center align-items-center">
-    <transition name="fade" mode="out-in">
-      <LoginForm v-if="loginType === 0" key="login"
-                 :setUserCallback="setUserCallback" :registerCallback="goToRegister" :passwordResetCallback="goToPasswordReset" />
-      <RegistrationForm v-if="loginType === 1" key="register"
-                        :setUserCallback="setUserCallback" :cancelCallback="goToLogin" />
-      <PasswordResetForm v-if="loginType === 2" key="pwdReset"
-                         :setUserCallback="setUserCallback" :cancelCallback="goToLogin" />
-    </transition>
+  <div class="d-flex flex-column h-100 justify-content-center align-items-stretch">
+    <h2 class="text-center">Cat Game!</h2>
+    <div class="d-flex justify-content-center align-items-center">
+      <transition name="fade" mode="out-in">
+        <LoginForm v-if="loginType === 0" key="login"
+                   :setUserCallback="setUserCallback" :registerCallback="goToRegister" :passwordResetCallback="goToPasswordReset" />
+        <RegistrationForm v-if="loginType === 1" key="register"
+                          :setUserCallback="setUserCallback" :cancelCallback="goToLogin" />
+        <PasswordResetForm v-if="loginType === 2" key="pwdReset"
+                           :setUserCallback="setUserCallback" :cancelCallback="goToLogin" />
+      </transition>
+    </div>
   </div>
 </template>

@@ -8,7 +8,6 @@ on:
       - main
 
 env:
-  terraform_dir: "./.infra"
   ARM_ENVIRONMENT: public
   ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
   ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
@@ -20,13 +19,15 @@ env:
   
 jobs:
   terraform:
-    name: Terraform
+    name: Terraform Plan/Apply
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ${{ env.terraform_dir }}
+        working-directory: ./.infra
     outputs:
       cat_game_app_service_name: ${{ steps.tf_output.outputs.cat_game_app_service_name }}
+      backend_api_func_app_name: ${{ steps.tf_output.outputs.backend_api_func_app_name }}
+      backend_api_func_app_hostname: ${{ steps.tf_output.outputs.backend_api_func_app_hostname }}
     steps:
       - uses: actions/checkout@v2
       - uses: hashicorp/setup-terraform@v1
@@ -69,14 +70,54 @@ jobs:
         if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed')
         run: |
           echo "::set-output name=cat_game_app_service_name::$(terraform output -raw cat_game_app_service_name)"
+          echo "::set-output name=backend_api_func_app_name::$(terraform output -raw backend_api_func_app_name)"
+          echo "::set-output name=backend_api_func_app_hostname::$(terraform output -raw backend_api_func_app_hostname)"
 
-  deploy-apps:
-    name: Deploy Apps
+  deploy-api:
+    name: Build/Deploy Backend API
     needs: terraform
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Build backend-api
+        working-directory: ./backend-api
+        run: |
+            npm install
+            npm run build
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: |
+            {
+              "clientId": "${{ env.ARM_CLIENT_ID }}",
+              "clientSecret": "${{ env.ARM_CLIENT_SECRET }}",
+              "subscriptionId": "${{ env.ARM_SUBSCRIPTION_ID }}",
+              "tenantId": "${{ env.ARM_TENANT_ID }}"
+            }
+      - name: Deploy backend-api
+        uses: Azure/functions-action@v1
+        if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed')
+        with:
+          app-name: ${{ needs.terraform.outputs.backend_api_func_app_name }}
+          package: ./backend-api
+
+  deploy-apps:
+    name: Build/Deploy Apps
+    needs: terraform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - uses: microsoft/variable-substitution@v1
+        with:
+          files: './cat-game/src/appsettings.json'
+        env:
+          backendApiBaseUrl: https://${{ needs.terraform.outputs.backend_api_func_app_hostname }}/
       - name: Build cats-game
         working-directory: ./cat-game
         run: |
@@ -93,7 +134,6 @@ jobs:
               "tenantId": "${{ env.ARM_TENANT_ID }}"
             }
       - name: Deploy cat-game
-        id: deploy_cat_game
         uses: azure/webapps-deploy@v2
         if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed')
         with:

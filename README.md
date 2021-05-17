@@ -2,6 +2,21 @@
 
 This project is intented to demonstrate some basic concepts around personal account security and password hygiene.
 
+## Local debugging
+You can run and debug the entire solution locally using Azure Functions tools and the Azure Storage emulator.
+
+### Setup your dev environment
+
+1. Install the [Azure Storage Emulator](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-emulator#get-the-storage-emulator).
+2. Install the [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=windows%2Ccsharp%2Cbash#install-the-azure-functions-core-tools)
+3. Install [NodeJS LTS](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=windows%2Ccsharp%2Cbash#install-the-azure-functions-core-tools)
+
+### Run the solution
+
+1. Start the Azure Storage Emulator by launching it from the start menu. An icon will appear in the taskbar.
+2. Start the `backend-api` by choosing `Debug backend-api` from the Run and Debug tab and pressing the green arrow button
+3. Start the `cate-game` app by choosing `Debug cat-game` from the Run and Debug tab and pressing the green arrow button
+
 ## Automated deployment
 
 The solution will be automatically deployed using GitHub actions when a push or completed pull request to the `main` branch occurs.
@@ -10,7 +25,7 @@ The solution will be automatically deployed using GitHub actions when a push or 
 
 To setup the GitHub Actions project deployment workflow for automated deployment to Azure, do the following:
 
-(These command use the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/get-started-with-azure-cli).)
+(These commands use the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/get-started-with-azure-cli).)
 
 1. **Create a service principal for Terraform deployment:**
 ```bash

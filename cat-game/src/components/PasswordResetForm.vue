@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
-import User from "../models/User";
+import { User } from "../../../backend-api/models/User";
 import UserService from "../services/UserService";
 
 @Component
@@ -73,11 +73,11 @@ export default class RegistrationForm extends Vue {
 <template>
   <div class="card flex-grow-1">
     <div class="card-body">
-      <h2 class="card-title">Reset your password
+      <h3 class="card-title">Reset your password
         <button type="button" class="close" aria-label="Close" @click.prevent="cancelCallback">
           <span aria-hidden="true">&times;</span>
         </button>
-      </h2>
+      </h3>
       <transition name="fade">
         <p class="text-danger" v-if="errorMsg">{{ errorMsg }}</p>
       </transition>

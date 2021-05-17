@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
-import User from "../models/User";
+import { User } from "../../../backend-api/models/User";
 import UserService from "../services/UserService";
 
 @Component({
@@ -52,7 +52,7 @@ export default class LoginForm extends Vue {
 }
 .card .card-img-left {
   background-color: #6610f2;
-  background-image: url("../assets/bg-wiggle-indigo-inverse.svg");
+  background-image: url("../assets/bg-bubbles-indigo-inverse.svg");
 }
 </style>
 
@@ -69,7 +69,7 @@ export default class LoginForm extends Vue {
       </div>
       <div class="col-sm-8">
         <form class="card-body">
-          <h2 class="card-title">Login to your account</h2>
+          <h3 class="card-title">Login to your account</h3>
           <transition name="fade">
             <p class="text-danger" v-if="errorMsg">{{ errorMsg }}</p>
           </transition>
