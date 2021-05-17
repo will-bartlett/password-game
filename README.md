@@ -29,13 +29,17 @@ To setup the GitHub Actions project deployment workflow for automated deployment
 (These commands use the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/get-started-with-azure-cli).)
 
 1. **Create a service principal for Terraform deployment:**
+
+Note the service principal's appId, name, password, and tenant for use in the following steps.
 ```bash
 # Create Service Principal 
 az ad sp create-for-rbac --name http://YOUR_SERVICE_PRINCIPAL_NAME
 ```
-Note service principal appId, name, password, and tenant for use in the other steps.
 
 2. **Create a storage account where Terraform state will be saved:**
+
+Note the storage account name for use in step 4.
+
 ```bash
 # Create Resource Group
 az group create -n YOUR_RESOURCE_GROUP_NAME -l westus2
@@ -49,9 +53,13 @@ az storage container create -n tfstate --account-name YOUR_STORAGE_ACCOUNT_NAME
 # Assign the Serivce Principal access
 az role assignment create --assignee http://YOUR_SERVICE_PRINCIPAL_NAME --role Contributor -g YOUR_RESOURCE_GROUP_NAME
 ```
-Note the storage account name for use in step 4.
 
 3. **Create a resource group where the solution will be deployed:**
+
+_Use a different resource group name than step 2 otherwise the Terraform deployment will break._
+
+Note the resource group name for use in step 4.
+
 ```bash
 # Create Resource Group
 az group create -n YOUR_RESOURCE_GROUP_NAME -l westus2
@@ -59,9 +67,8 @@ az group create -n YOUR_RESOURCE_GROUP_NAME -l westus2
 # Assign the Serivce Principal access
 az role assignment create --assignee http://YOUR_SERVICE_PRINCIPAL_NAME --role Contributor -g YOUR_RESOURCE_GROUP_NAME
 ```
-Note the resource group name for use in step 4.
-
 4. **Add the following secrets to your GitHub repository** ([GitHub docs](https://docs.github.com/en/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository)):
+
 - `ARM_TENANT_ID`: Your Azure AD tenant ID
 - `ARM_CLIENT_ID`: Your service principal app ID
 - `ARM_CLIENT_SECRET`: Your service principal password
