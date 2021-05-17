@@ -55,16 +55,15 @@ jobs:
               azurerm_resource_group.main_rg /subscriptions/${{ env.ARM_SUBSCRIPTION_ID }}/resourceGroups/${{ env.AZURE_RESOURCE_GROUP }}
       - name: Terraform Plan
         id: plan
-        if: github.event_name == 'pull_request' && github.event.action != 'closed'
         run: |
-            terraform plan -no-color -lock=false \
+            terraform plan -no-color -lock=false -out=tfplan \
               -var "azure_resource_group_name=${{ env.AZURE_RESOURCE_GROUP }}"
       - name: Terraform Apply
         id: apply
         if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed')
         run: |
             terraform apply -auto-approve -no-color \
-              -var "azure_resource_group_name=${{ env.AZURE_RESOURCE_GROUP }}"
+              -var "azure_resource_group_name=${{ env.AZURE_RESOURCE_GROUP }}" tfplan
       - name: Terraform Output
         id: tf_output
         if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed')
