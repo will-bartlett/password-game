@@ -1,7 +1,7 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
 import { TableClient } from "@azure/data-tables";
 import { UserWithSecurityAttrs, UserToTableEntity } from "../models/UserAsTableEntity";
-import { DefaultOperationOptions } from "../models/StorageOptions";
+import { UserTableName, DefaultOperationOptions } from "../models/Settings";
 
 const updateUser: AzureFunction = async (context: Context, req: HttpRequest) => {
     if (!isValidUser(req.body)) {
@@ -15,7 +15,7 @@ const updateUser: AzureFunction = async (context: Context, req: HttpRequest) => 
     const entity = UserToTableEntity(req.body);
 
     const tableClient = TableClient.fromConnectionString(
-        process.env["StorageAccountConnectionString"], "User");
+        process.env["StorageAccountConnectionString"], UserTableName);
 
     try {
         await tableClient.create(DefaultOperationOptions);

@@ -65,6 +65,14 @@ resource "azurerm_app_service" "cat_game" {
   https_only          = true
 }
 
+resource "azurerm_app_service" "dog_game" {
+  name                = "${local.service_prefix}-dog-game-${random_string.service_suffix.id}"
+  location            = azurerm_resource_group.main_rg.location
+  resource_group_name = azurerm_resource_group.main_rg.name
+  app_service_plan_id = azurerm_app_service_plan.main_plan.id
+  https_only          = true
+}
+
 resource "azurerm_function_app" "backend_api" {
   name                       = "${local.service_prefix}-backend-api-${random_string.service_suffix.id}"
   location                   = azurerm_resource_group.main_rg.location
@@ -84,7 +92,10 @@ resource "azurerm_function_app" "backend_api" {
     always_on        = true
     linux_fx_version = "node|lts"
     cors {
-      allowed_origins = ["https://${azurerm_app_service.cat_game.default_site_hostname}"]
+      allowed_origins = [
+        "https://${azurerm_app_service.cat_game.default_site_hostname}",
+        "https://${azurerm_app_service.dog_game.default_site_hostname}",
+      ]
     }
   }
   version = "~3"
@@ -92,6 +103,10 @@ resource "azurerm_function_app" "backend_api" {
 
 output "cat_game_app_service_name" {
   value = azurerm_app_service.cat_game.name
+}
+
+output "dog_game_app_service_name" {
+  value = azurerm_app_service.dog_game.name
 }
 
 output "backend_api_func_app_name" {

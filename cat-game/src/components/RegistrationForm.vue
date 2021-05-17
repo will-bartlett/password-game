@@ -65,10 +65,11 @@ export default class PasswordResetForm extends Vue {
 <template>
   <div class="card flex-grow-1">
     <div class="card-body">
-      <h3 class="card-title">Create a new account</h3>
-      <button type="button" class="close" aria-label="Close" @click.prevent="cancelCallback">
-        <span aria-hidden="true">&times;</span>
-      </button>
+      <h3 class="card-title">Create a new account
+        <button type="button" class="close" aria-label="Close" @click.prevent="cancelCallback">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </h3>
       <transition name="fade">
         <p class="text-danger" v-if="errorMsg">{{ errorMsg }}</p>
       </transition>

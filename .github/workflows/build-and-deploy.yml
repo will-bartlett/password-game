@@ -26,6 +26,7 @@ jobs:
         working-directory: ./.infra
     outputs:
       cat_game_app_service_name: ${{ steps.tf_output.outputs.cat_game_app_service_name }}
+      dog_game_app_service_name: ${{ steps.tf_output.outputs.dog_game_app_service_name }}
       backend_api_func_app_name: ${{ steps.tf_output.outputs.backend_api_func_app_name }}
       backend_api_func_app_hostname: ${{ steps.tf_output.outputs.backend_api_func_app_hostname }}
     steps:
@@ -67,6 +68,7 @@ jobs:
         if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed')
         run: |
           echo "::set-output name=cat_game_app_service_name::$(terraform output -raw cat_game_app_service_name)"
+          echo "::set-output name=dog_game_app_service_name::$(terraform output -raw dog_game_app_service_name)"
           echo "::set-output name=backend_api_func_app_name::$(terraform output -raw backend_api_func_app_name)"
           echo "::set-output name=backend_api_func_app_hostname::$(terraform output -raw backend_api_func_app_hostname)"
 
@@ -110,13 +112,25 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '14'
-      - uses: microsoft/variable-substitution@v1
+      - name: Replace settings in cat-game
+        uses: microsoft/variable-substitution@v1
         with:
           files: './cat-game/src/appsettings.json'
         env:
           backendApiBaseUrl: https://${{ needs.terraform.outputs.backend_api_func_app_hostname }}/
       - name: Build cats-game
         working-directory: ./cat-game
+        run: |
+            npm install
+            npm run build
+      - name: Replace settings in dog-game
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: './dog-game/src/appsettings.json'
+        env:
+          backendApiBaseUrl: https://${{ needs.terraform.outputs.backend_api_func_app_hostname }}/
+      - name: Build dog-game
+        working-directory: ./dog-game
         run: |
             npm install
             npm run build
@@ -136,3 +150,9 @@ jobs:
         with:
           app-name: ${{ needs.terraform.outputs.cat_game_app_service_name }}
           package: ./cat-game/dist
+      - name: Deploy dog-game
+        uses: azure/webapps-deploy@v2
+        if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed')
+        with:
+          app-name: ${{ needs.terraform.outputs.dog_game_app_service_name }}
+          package: ./dog-game/dist

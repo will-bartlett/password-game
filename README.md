@@ -15,7 +15,8 @@ You can run and debug the entire solution locally using Azure Functions tools an
 
 1. Start the Azure Storage Emulator by launching it from the start menu. An icon will appear in the taskbar.
 2. Start the `backend-api` by choosing `Debug backend-api` from the Run and Debug tab and pressing the green arrow button
-3. Start the `cate-game` app by choosing `Debug cat-game` from the Run and Debug tab and pressing the green arrow button
+3. Start the `cat-game` app by choosing `Debug cat-game` from the Run and Debug tab and pressing the green arrow button
+4. Start the `dog-game` app by choosing `Debug dog-game` from the Run and Debug tab and pressing the green arrow button
 
 ## Automated deployment
 
