@@ -80,7 +80,6 @@ resource "azurerm_function_app" "backend_api" {
     "StorageAccountConnectionString" = azurerm_storage_account.main_storage.primary_connection_string
   }
   site_config {
-    always_on                 = true
     linux_fx_version          = "node|lts"
     use_32_bit_worker_process = true
     cors {
