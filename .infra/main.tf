@@ -84,7 +84,7 @@ resource "azurerm_function_app" "backend_api" {
     always_on        = true
     linux_fx_version = "node|lts"
     cors {
-      allowed_origins = [azurerm_app_service.cat_game.default_site_hostname]
+      allowed_origins = ["https://${azurerm_app_service.cat_game.default_site_hostname}"]
     }
   }
   version = "~3"
