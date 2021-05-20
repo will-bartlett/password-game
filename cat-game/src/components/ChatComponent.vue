@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import { appSettings, ChatMessage, ChatService, User } from '@pwdgame/shared';
+import { ChatMessage, ChatService, User } from '@pwdgame/shared';
+import appSettings from "../../appsettings.json";
 
 @Component
 export default class ChatComponent extends Vue {
