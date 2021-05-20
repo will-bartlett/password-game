@@ -31,11 +31,23 @@
 </template>
 
 <script lang="ts">
+import { appSettings, ChatService } from '@pwdgame/shared';
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component
 export default class HelloWorld extends Vue {
   @Prop() private msg!: string;
+
+  private chatService = new ChatService(appSettings.backendApiBaseUrl);
+
+  mounted() {
+    this.chatService.addMessageListener(msg => {
+      alert(`Chat message from '${msg.username}': ${msg.message}`);
+    });
+    setTimeout(() => {
+      this.chatService.sendMessage({ username: "testuser", message: "testmessage"});
+    }, 2000);
+  }
 }
 </script>
 

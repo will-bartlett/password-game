@@ -4,12 +4,13 @@ import './styles/site.scss'
 import { Component, Vue } from "vue-property-decorator";
 import HelloWorld from "./components/HelloWorld.vue";
 import AuthenticationComponent from "./components/AuthenticationComponent.vue";
-import { User } from "../../backend-api/models/User";
+import ChatComponent from "./components/ChatComponent.vue";
+import { User } from "@pwdgame/shared";
 
 @Component({
   components: {
-    HelloWorld,
     AuthenticationComponent,
+    ChatComponent,
   },
 })
 export default class App extends Vue {
@@ -24,6 +25,6 @@ export default class App extends Vue {
 <template>
   <div id="app" class="container-fluid">
     <AuthenticationComponent v-if="!user" :setUserCallback="setUser" />
-    <HelloWorld v-if="user" msg="Welcome to Your Vue.js + TypeScript App" />
+    <ChatComponent v-if="user" :user="user" />
   </div>
 </template>

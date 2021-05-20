@@ -1,7 +1,6 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
-import { User } from "../../../backend-api/models/User";
-import UserService from "../services/UserService";
+import { appSettings, User, UserService } from "@pwdgame/shared";
 
 @Component
 export default class RegistrationForm extends Vue {
@@ -30,7 +29,7 @@ export default class RegistrationForm extends Vue {
   errorMsg = "";
 
   async created() {
-    const questions = await new UserService().getSecurityQuestions();
+    const questions = await new UserService(appSettings.backendApiBaseUrl).getSecurityQuestions();
     const rand = new Date().valueOf() % Object.keys(questions).length; // cheat way to get random index
     this.securityPromptKey = Object.keys(questions)[rand];
     this.securityPrompt = questions[this.securityPromptKey];
@@ -49,7 +48,7 @@ export default class RegistrationForm extends Vue {
     this.submitPending = true;
 
     try {
-      const user = await new UserService().resetPassword(
+      const user = await new UserService(appSettings.backendApiBaseUrl).resetPassword(
         this.username,
         this.securityPromptKey,
         this.securityAnswer,
@@ -72,7 +71,7 @@ export default class RegistrationForm extends Vue {
 
 <template>
   <div class="card flex-grow-1">
-    <div class="card-body">
+    <form class="card-body">
       <h3 class="card-title">Reset your password
         <button type="button" class="close" aria-label="Close" @click.prevent="cancelCallback">
           <span aria-hidden="true">&times;</span>
@@ -104,6 +103,6 @@ export default class RegistrationForm extends Vue {
         <b-spinner v-if="submitPending" label="Loading" variant="light" small />
         <span v-if="!submitPending">Reset password</span>
       </button>
-    </div>
+    </form>
   </div>
 </template>

@@ -1,7 +1,6 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
-import { User } from "../../../backend-api/models/User";
-import UserService from "../services/UserService";
+import { appSettings, User, UserService } from "@pwdgame/shared";
 
 @Component({
   components: {},
@@ -32,7 +31,7 @@ export default class PasswordResetForm extends Vue {
   errorMsg = "";
 
   async created() {
-    this.securityPrompts = await new UserService().getSecurityQuestions();
+    this.securityPrompts = await new UserService(appSettings.backendApiBaseUrl).getSecurityQuestions();
     Object.keys(this.securityAnswers).forEach(k => this.securityAnswers[k] = "")
   }
 
@@ -47,7 +46,7 @@ export default class PasswordResetForm extends Vue {
     }
 
     this.submitPending = true;
-    const userService = new UserService();
+    const userService = new UserService(appSettings.backendApiBaseUrl);
     const user: User = {
       username: this.username,
     };
@@ -64,7 +63,7 @@ export default class PasswordResetForm extends Vue {
 
 <template>
   <div class="card flex-grow-1">
-    <div class="card-body">
+    <form class="card-body">
       <h3 class="card-title">Create a new account
         <button type="button" class="close" aria-label="Close" @click.prevent="cancelCallback">
           <span aria-hidden="true">&times;</span>
@@ -97,6 +96,6 @@ export default class PasswordResetForm extends Vue {
         <b-spinner v-if="submitPending" label="Loading" variant="light" small />
         <span v-if="!submitPending">Create account</span>
       </button>
-    </div>
+    </form>
   </div>
 </template>

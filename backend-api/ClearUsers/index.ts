@@ -1,6 +1,6 @@
 import { AzureFunction, Context } from "@azure/functions"
 import { TableClient } from "@azure/data-tables";
-import { UserTableName, DefaultOperationOptions } from "../models/Settings";
+import { UserTableName, DefaultOperationOptions } from "../Settings";
 
 const timerTrigger: AzureFunction = async function (context: Context, myTimer: any): Promise<void> {
     const tableClient = TableClient.fromConnectionString(

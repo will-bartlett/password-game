@@ -87,6 +87,7 @@ resource "azurerm_function_app" "backend_api" {
     "FUNCTIONS_WORKER_RUNTIME"       = "node",
     "NODE_ENV"                       = "production",
     "StorageAccountConnectionString" = azurerm_storage_account.main_storage.primary_connection_string
+    "SignalRConnectionString"        = azurerm_signalr_service.chat_service.primary_connection_string
   }
   site_config {
     always_on        = true
@@ -96,9 +97,33 @@ resource "azurerm_function_app" "backend_api" {
         "https://${azurerm_app_service.cat_game.default_site_hostname}",
         "https://${azurerm_app_service.dog_game.default_site_hostname}",
       ]
+      support_credentials = true
     }
   }
   version = "~3"
+}
+
+resource "azurerm_signalr_service" "chat_service" {
+  name                = "${local.service_prefix}-signalr-${random_string.service_suffix.id}"
+  location            = azurerm_resource_group.main_rg.location
+  resource_group_name = azurerm_resource_group.main_rg.name
+
+  sku {
+    name     = "Free_F1"
+    capacity = 1
+  }
+
+  cors {
+    allowed_origins = [
+      "https://${azurerm_app_service.cat_game.default_site_hostname}",
+      "https://${azurerm_app_service.dog_game.default_site_hostname}",
+    ]
+  }
+
+  features {
+    flag  = "ServiceMode"
+    value = "Serverless"
+  }
 }
 
 output "cat_game_app_service_name" {

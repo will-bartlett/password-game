@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
-import { User } from "../../../backend-api/models/User";
+import { User } from "@pwdgame/shared";
 import LoginForm from "./LoginForm.vue"
 import RegistrationForm from "./RegistrationForm.vue"
 import PasswordResetForm from "./PasswordResetForm.vue"

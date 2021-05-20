@@ -1,0 +1,19 @@
+{
+    "name": "@pwdgame/shared",
+    "version": "1.0.0",
+    "description": "",
+    "author": "",
+    "license": "MIT",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc --build --clean && tsc"
+    },
+    "dependencies": {
+        "@azure/data-tables": "^12.0.0-beta.2",
+        "@microsoft/signalr": "^5.0.6",
+        "crypto-js": "^4.0.0"
+    },
+    "devDependencies": {
+        "@types/crypto-js": "4.0.1"
+    }
+}

@@ -1,8 +1,9 @@
-import { sha256 } from 'js-sha256'
-import { User, UserWithSecurityAttrs } from "../../../backend-api/models/User";
-import appsettings from "../appsettings.json";
+import sha256 from 'crypto-js/sha256';
+import { User, UserWithSecurityAttrs } from "../models/User";
 
-export default class UserService {
+export class UserService {
+
+    constructor(private backendApiBaseUrl: string) { }
 
     public async createUser(user: User, password: string, securityAnswers: { [key: string]: string }) {
         if ((await this.retrieveUser(user.username)) !== null) {
@@ -27,7 +28,7 @@ export default class UserService {
 
     public async getSecurityQuestions(): Promise<{ [key: string]: string }> {
         return {
-            "favPet": "What is your pet's name?",
+            "favColor": "What is your favorite color?",
             "favFood": "What is your favorite food?",
             "birthplace": "What city were you born in?"
         };
@@ -77,13 +78,13 @@ export default class UserService {
     }
 
     private hashValue(password: string) {
-        return sha256(password)
+        return sha256(password).toString();
     }
 
     private getApiUrl(path: string, queryParams: { [param: string]: string } = {}) {
         path = path.startsWith('/') ? path.substring(1) : path;
         const params = new URLSearchParams();
         Object.keys(queryParams).forEach(p => params.set(p, queryParams[p]));
-        return `${appsettings.backendApiBaseUrl}api/${path}?${params.toString()}`;
+        return `${this.backendApiBaseUrl}api/${path}?${params.toString()}`;
     }
 }

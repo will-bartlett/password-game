@@ -1,5 +1,5 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
-import { UserAsTableEntity, UserFromTableEntity } from "../models/UserAsTableEntity";
+import { UserAsTableEntity, UserFromTableEntity } from "@pwdgame/shared";
 
 const getUser: AzureFunction = async (context: Context, req: HttpRequest, userEntity: UserAsTableEntity) => {
     if(!userEntity) {

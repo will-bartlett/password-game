@@ -1,5 +1,13 @@
 import { TableEntity } from "@azure/data-tables";
-import { UserWithSecurityAttrs } from "./User";
+
+export interface User {
+    username: string;
+}
+
+export interface UserWithSecurityAttrs extends User {
+    passwordHash: string,
+    securityAnswers: { [key: string]: string };
+}
 
 export interface UserAsTableEntity extends TableEntity<Omit<UserWithSecurityAttrs, "securityAnswers">> {
     securityAnswers: string
@@ -21,5 +29,3 @@ export function UserFromTableEntity(user: UserAsTableEntity): UserWithSecurityAt
         securityAnswers: JSON.parse(user.securityAnswers)
     }
 }
-
-export { UserWithSecurityAttrs }

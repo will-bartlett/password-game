@@ -81,6 +81,17 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '14'
+      - name: Replace settings
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: './shared/appsettings.json'
+        env:
+          backendApiBaseUrl: https://${{ needs.terraform.outputs.backend_api_func_app_hostname }}/
+      - name: Build shared
+        working-directory: ./shared
+        run: |
+            npm install
+            npm run build
       - name: Build backend-api
         working-directory: ./backend-api
         run: |
@@ -112,10 +123,15 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '14'
-      - name: Replace settings in cat-game
+      - name: Build shared
+        working-directory: ./shared
+        run: |
+            npm install
+            npm run build
+      - name: Replace settings
         uses: microsoft/variable-substitution@v1
         with:
-          files: './cat-game/src/appsettings.json'
+          files: './shared/appsettings.json'
         env:
           backendApiBaseUrl: https://${{ needs.terraform.outputs.backend_api_func_app_hostname }}/
       - name: Build cats-game
@@ -123,12 +139,6 @@ jobs:
         run: |
             npm install
             npm run build
-      - name: Replace settings in dog-game
-        uses: microsoft/variable-substitution@v1
-        with:
-          files: './dog-game/src/appsettings.json'
-        env:
-          backendApiBaseUrl: https://${{ needs.terraform.outputs.backend_api_func_app_hostname }}/
       - name: Build dog-game
         working-directory: ./dog-game
         run: |

@@ -7,6 +7,7 @@
         "build": "vue-cli-service build"
     },
     "dependencies": {
+        "@pwdgame/shared": "file:../shared",
         "bootstrap": "4.6.0",
         "bootstrap-vue": "2.21.2",
         "bootswatch": "4.6.0",
