@@ -34,6 +34,13 @@ resource "azurerm_resource_group" "main_rg" {
   location = var.azure_region
 }
 
+resource "azurerm_application_insights" "main_ai" {
+  name                = "${local.service_prefix}-ai-${random_string.service_suffix.id}"
+  location            = azurerm_resource_group.main_rg.location
+  resource_group_name = azurerm_resource_group.main_rg.name
+  application_type    = "web"
+}
+
 resource "azurerm_storage_account" "main_storage" {
   name                     = "${local.service_prefix}stg${random_string.service_suffix.id}"
   location                 = azurerm_resource_group.main_rg.location
@@ -63,6 +70,9 @@ resource "azurerm_app_service" "cat_game" {
   resource_group_name = azurerm_resource_group.main_rg.name
   app_service_plan_id = azurerm_app_service_plan.main_plan.id
   https_only          = true
+  app_settings = {
+    "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.main_ai.instrumentation_key
+  }
 }
 
 resource "azurerm_app_service" "dog_game" {
@@ -71,6 +81,9 @@ resource "azurerm_app_service" "dog_game" {
   resource_group_name = azurerm_resource_group.main_rg.name
   app_service_plan_id = azurerm_app_service_plan.main_plan.id
   https_only          = true
+  app_settings = {
+    "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.main_ai.instrumentation_key
+  }
 }
 
 resource "azurerm_function_app" "backend_api" {
@@ -83,9 +96,9 @@ resource "azurerm_function_app" "backend_api" {
   os_type                    = "linux"
   https_only                 = true
   app_settings = {
-    "WEBSITE_RUN_FROM_PACKAGE"       = "1",
     "FUNCTIONS_WORKER_RUNTIME"       = "node",
     "NODE_ENV"                       = "production",
+    "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.main_ai.instrumentation_key
     "StorageAccountConnectionString" = azurerm_storage_account.main_storage.primary_connection_string
     "SignalRConnectionString"        = azurerm_signalr_service.chat_service.primary_connection_string
   }
@@ -124,6 +137,11 @@ resource "azurerm_signalr_service" "chat_service" {
     flag  = "ServiceMode"
     value = "Serverless"
   }
+}
+
+output "app_insights_instrumentation_key" {
+  value     = azurerm_application_insights.main_ai.instrumentation_key
+  sensitive = true
 }
 
 output "cat_game_app_service_name" {
