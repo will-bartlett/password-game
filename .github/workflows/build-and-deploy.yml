@@ -106,8 +106,7 @@ jobs:
       - name: Overwrite local dependency symlink with actual content
         run: |
           rm ./backend-api/node_modules/@pwdgame/shared
-          mkdir ./backend-api/node_modules/@pwdgame/shared
-          cp -rf ./shared ./backend-api/node_modules/@pwdgame/shared
+          cp -rfv ./shared ./backend-api/node_modules/@pwdgame
       - name: Deploy backend-api
         uses: Azure/functions-action@v1
         if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed')
