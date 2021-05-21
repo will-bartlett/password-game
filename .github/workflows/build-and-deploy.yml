@@ -103,12 +103,13 @@ jobs:
               "subscriptionId": "${{ env.ARM_SUBSCRIPTION_ID }}",
               "tenantId": "${{ env.ARM_TENANT_ID }}"
             }
+      - run: zip -r ./backend-api.zip ./backend-api
       - name: Deploy backend-api
         uses: Azure/functions-action@v1
         if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed')
         with:
           app-name: ${{ needs.terraform.outputs.backend_api_func_app_name }}
-          package: ./backend-api
+          package: ./backend-api.zip
 
   deploy-apps:
     name: Build/Deploy Apps

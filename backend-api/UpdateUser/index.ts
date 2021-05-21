@@ -18,7 +18,7 @@ const updateUser: AzureFunction = async (context: Context, req: HttpRequest) => 
         process.env["StorageAccountConnectionString"], UserTableName);
 
     try {
-        await tableClient.create(DefaultOperationOptions);
+        await tableClient.createTable(DefaultOperationOptions);
     } catch (err) {
         if (err.details?.odataError?.code !== "TableAlreadyExists") {
             throw err;

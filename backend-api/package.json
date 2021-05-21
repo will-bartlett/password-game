@@ -9,9 +9,9 @@
         "start": "func start"
     },
     "dependencies": {
-        "@pwdgame/shared": "file:../shared",
         "@azure/data-tables": "^12.0.0-beta.2",
-        "@azure/functions": "^1.2.3"
+        "@azure/functions": "^1.2.3",
+        "@pwdgame/shared": "file:../shared"
     },
     "devDependencies": {
         "@types/node": "^15.0.2",

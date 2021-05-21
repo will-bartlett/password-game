@@ -7,7 +7,7 @@ const timerTrigger: AzureFunction = async function (context: Context, myTimer: a
         process.env["StorageAccountConnectionString"], UserTableName);
 
     try {
-        await tableClient.delete(DefaultOperationOptions)
+        await tableClient.deleteTable(DefaultOperationOptions)
     } catch (err) {
         if (err.details?.odataError?.code !== "ResourceNotFound") {
             throw err;
