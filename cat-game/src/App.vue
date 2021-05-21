@@ -2,7 +2,6 @@
 import './styles/site.scss'
 
 import { Component, Vue } from "vue-property-decorator";
-import HelloWorld from "./components/HelloWorld.vue";
 import AuthenticationComponent from "./components/AuthenticationComponent.vue";
 import ChatComponent from "./components/ChatComponent.vue";
 import { User } from "@pwdgame/shared";
