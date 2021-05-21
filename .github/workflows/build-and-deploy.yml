@@ -104,7 +104,8 @@ jobs:
               "tenantId": "${{ env.ARM_TENANT_ID }}"
             }
       - run: |
-          rm -rf ./backend-api/node_modules/@pwdgame/shared
+          rm ./backend-api/node_modules/@pwdgame/shared
+          mkdir ./backend-api/node_modules/@pwdgame/shared
           cp -rf ./shared ./backend-api/node_modules/@pwdgame/shared
       - name: Deploy backend-api
         uses: Azure/functions-action@v1
