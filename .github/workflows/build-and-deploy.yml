@@ -103,16 +103,17 @@ jobs:
               "subscriptionId": "${{ env.ARM_SUBSCRIPTION_ID }}",
               "tenantId": "${{ env.ARM_TENANT_ID }}"
             }
-      - run: |
-          pushd ./backend-api
-          zip -r ./backend-api.zip ./*
-          popd
+      - name: Overwrite local dependency symlink with actual content
+        run: |
+          rm ./backend-api/node_modules/@pwdgame/shared
+          mkdir ./backend-api/node_modules/@pwdgame/shared
+          cp -rf ./shared ./backend-api/node_modules/@pwdgame/shared
       - name: Deploy backend-api
         uses: Azure/functions-action@v1
         if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed')
         with:
           app-name: ${{ needs.terraform.outputs.backend_api_func_app_name }}
-          package: ./backend-api/backend-api.zip
+          package: ./backend-api
 
   deploy-apps:
     name: Build/Deploy Apps
