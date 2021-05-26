@@ -2,8 +2,12 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { ChatMessage, ChatService, User } from '@pwdgame/shared';
 import appSettings from "../../appsettings.json";
+import AvatarPickerComponent from "./AvatarPickerComponent.vue";
+import avatars from "../assets/avatars/avatars";
 
-@Component
+@Component({
+  components: { AvatarPickerComponent }
+})
 export default class ChatComponent extends Vue {
   private chatService: ChatService | null = null;
 
@@ -11,18 +15,18 @@ export default class ChatComponent extends Vue {
     type: Object,
     required: true
   })
-  readonly user: User | null = null;
+  readonly user?: User;
 
   newMessage = "";
   sendMessagePending = false;
   messageHistory = [] as Array<{ key: number, msg: ChatMessage }>;
 
-  mounted() {
+  beforeMount() {
     this.chatService = new ChatService(appSettings.backendApiBaseUrl);
     this.chatService.addMessageListener(this.receiveMessage);
   }
 
-  unmounted() {
+  destroy() {
     this.chatService?.dispose();
     this.chatService = null;
   }
@@ -35,20 +39,36 @@ export default class ChatComponent extends Vue {
   }
 
   async sendMessage() {
+    if(!this.user) return;
     this.sendMessagePending = true;
     await this.chatService?.sendMessage({
-      username: this.user!.username,
+      username: this.user.username,
+      avatarId: this.user.avatarId,
       message: this.newMessage
     });
     this.newMessage = "";
     this.sendMessagePending = false;
   }
 
-  getChatBubbleClasses(msg: ChatMessage) {
-    if (msg.username === this.user!.username) {
-      return ['alert-dark align-self-end msg-mine'];
+  getAvatarFile(msg: ChatMessage) {
+    const avatarId = (Object.keys(avatars) as Array<keyof typeof avatars>)
+      .find(k => k === msg.avatarId) ?? 'default';
+    return avatars[avatarId];
+  }
+
+  getChatRowClasses(msg: ChatMessage, user: User | null) {
+    if (msg.username === user?.username) {
+      return ['align-self-end msg-mine flex-row-reverse'];
     } else {
-      return ['alert-primary align-self-start msg-theirs'];
+      return ['align-self-start msg-theirs'];
+    }
+  }
+
+  getChatBubbleClasses(msg: ChatMessage, user: User | null) {
+    if (msg.username === user?.username) {
+      return ['alert-dark'];
+    } else {
+      return ['alert-primary'];
     }
   }
 }
@@ -61,7 +81,7 @@ export default class ChatComponent extends Vue {
   background: rgba(255, 255, 255, 0.7);
 }
 .alert {
-  opacity: .9;
+  opacity: 0.9;
 }
 .overflow-auto {
   flex: 1 1 90%;
@@ -70,34 +90,35 @@ form {
   flex: 0 0 5em;
 }
 input {
-  font-size: .9rem;
+  font-size: 0.9rem;
 }
-.msg-theirs,
-.msg-mine {
+.msg-theirs .alert,
+.msg-mine .alert {
   position: relative;
 }
-.msg-theirs::before,
-.msg-mine::before {
+.msg-theirs .alert::before,
+.msg-mine .alert::before {
   position: absolute;
   content: " ";
   display: block;
   bottom: 0;
   border: 4px solid transparent;
 }
-.msg-theirs {
+.msg-theirs .alert {
   margin-right: 80px;
+  margin-left: 10px;
   border-bottom-left-radius: 0;
 }
-.msg-theirs::before {
+.msg-theirs .alert::before {
   left: -8px;
   border-color: transparent #4582ec #4582ec transparent;
 }
-.msg-mine {
+.msg-mine .alert {
   margin-left: 80px;
   margin-right: 10px;
   border-bottom-right-radius: 0;
 }
-.msg-mine::before {
+.msg-mine .alert::before {
   right: -8px;
   border-color: transparent transparent #343a40 #343a40;
 }
@@ -110,11 +131,15 @@ input {
 
       <transition-group name="scale-fade" tag="div"
                         class="p-3 d-flex flex-column-reverse overflow-auto">
-        <div class="alert alert-primary mb-1 p-2"
-             :class="getChatBubbleClasses(item.msg)"
-             v-for="item in messageHistory" :key="item.key">
-          <p class="mb-1">{{item.msg.message}}</p>
-          <p class="mb-1"><em><small>Sent by: {{item.msg.username}}</small></em></p>
+        <div class="d-flex align-items-end" v-for="item in messageHistory" :key="item.key"
+             :class="getChatRowClasses(item.msg, user)">
+        <img :src="require(`../assets/avatars/${getAvatarFile(item.msg)}`)"
+             height="80" width="80" class="circle" />
+          <div class="alert alert-primary mb-1 p-2"
+               :class="getChatBubbleClasses(item.msg, user)">
+            <p class="mb-1">{{item.msg.message}}</p>
+            <p class="mb-0"><em><small>Sent by: {{item.msg.username}}</small></em></p>
+          </div>
         </div>
       </transition-group>
 
@@ -131,5 +156,7 @@ input {
         </button>
       </form>
     </div>
+
+    <AvatarPickerComponent v-if="user" :user="user" />
   </div>
 </template>

@@ -29,3 +29,7 @@ body {
     height: 100%;
     @include border-right-radius($card-inner-border-radius);
 }
+
+img.circle {
+    border-radius: 50%;
+}

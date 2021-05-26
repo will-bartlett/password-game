@@ -2,6 +2,7 @@ import { TableEntity } from "@azure/data-tables";
 
 export interface User {
     username: string;
+    avatarId?: string;
 }
 
 export interface UserWithSecurityAttrs extends User {
@@ -25,6 +26,7 @@ export function UserToTableEntity(user: UserWithSecurityAttrs): UserAsTableEntit
 export function UserFromTableEntity(user: UserAsTableEntity): UserWithSecurityAttrs {
     return {
         username: user.username,
+        avatarId: user.avatarId,
         passwordHash: user.passwordHash,
         securityAnswers: JSON.parse(user.securityAnswers)
     }

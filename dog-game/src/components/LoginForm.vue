@@ -51,7 +51,7 @@ export default class LoginForm extends Vue {
 <template>
   <div class="card flex-grow-1">
     <form class="card-body">
-      <h3 class="card-title">Login to your Cat Game account</h3>
+      <h4 class="card-title">Just login using your Cat Chat username and password</h4>
       <transition name="fade">
         <p class="text-danger" v-if="errorMsg">{{ errorMsg }}</p>
       </transition>
