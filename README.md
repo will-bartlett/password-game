@@ -21,6 +21,16 @@ To actually run the chat locally, you'll need an Azure SignalR instance. [Create
 1. Copy the contents of `backend-api/example.settings.json` to `backend-api/local.settings.json`.
 2. Replace the value `YOUR_SIGNALR_CONNECTION_STRING` with your connection string from the previous section.
 
+### Build the shared package
+
+Run the following to build:
+```bash
+pushd ./shared
+npm install
+npm run build
+popd
+```
+
 ### Run the solution
 
 1. Start the Azure Storage Emulator by launching it from the start menu. An icon will appear in the taskbar.

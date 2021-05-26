@@ -36,6 +36,7 @@ const isValidUser = (user: any): user is UserWithSecurityAttrs => {
     return user
         && typeof user.username === "string"
         && typeof user.passwordHash === "string"
+        && (!user.avatarId || typeof user.avatarId === "string")
         && (user as {}).hasOwnProperty("securityAnswers");
 }
 

@@ -15,7 +15,19 @@ export class UserService {
             passwordHash: this.hashValue(password),
             securityAnswers: securityAnswers
         }
-        this.persistUser(userWithPass);
+        await this.persistUser(userWithPass);
+    }
+
+    public async updateUser(username: string, newProperties: Partial<User>) {
+        const existingUser = await this.retrieveUser(username);
+        if(!existingUser) {
+            throw new Error("Unable to locate existing user information.");
+        }
+        const user = {
+            ...existingUser,
+            ...newProperties
+        };
+        await this.persistUser(user);
     }
 
     public async loginUser(username: string, password: string) {

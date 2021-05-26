@@ -11,7 +11,7 @@ export default class PhishedComponent extends Vue {
     type: Object,
     required: true
   })
-  readonly user: User | null = null;
+  readonly user?: User;
 
   readonly spamMessages = [
     "I love dogs! Woof! - This message brought to you by 1-800-DOGS",
@@ -42,11 +42,21 @@ export default class PhishedComponent extends Vue {
   }
 
   sendSpamMessage() {
+    if(!this.user) return;
     const randomMsgIdx = new Date().valueOf() % this.spamMessages.length;
     this.chatService?.sendMessage({
-      username: this.user!.username,
-      message: this.spamMessages[randomMsgIdx]
+      username: this.user.username,
+      message: this.spamMessages[randomMsgIdx],
+      avatarId: this.getRandomDogAvatarId()
     });
+  }
+
+  getRandomDogAvatarId() {
+    return [
+      'dog1',
+      'dog2',
+      'dog3'
+    ][new Date().valueOf() % 3];
   }
 }
   </script>

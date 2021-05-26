@@ -33,7 +33,7 @@ export default class AuthenticationComponent extends Vue {
 </script>
 
 <template>
-  <div class="d-flex flex-column h-100 justify-content-center align-items-stretch">
+  <div class="d-flex flex-column justify-content-center align-items-stretch" style="min-height: 100%">
     <h2 class="text-center">Cat Game!</h2>
     <div class="d-flex justify-content-center align-items-center">
       <transition name="fade" mode="out-in">
