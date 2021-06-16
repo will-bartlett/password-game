@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import { ChatMessage, ChatService, User } from '@pwdgame/shared';
+import { ChatMessage, ChatDeletionCommand, ChatService, ChatServiceMethod, User } from '@pwdgame/shared';
 import appSettings from "../../appsettings.json";
 import AvatarPickerComponent from "./AvatarPickerComponent.vue";
 import avatars from "../assets/avatars/avatars";
@@ -17,13 +17,16 @@ export default class ChatComponent extends Vue {
   })
   readonly user?: User;
 
+  adminMode = location.search.toLowerCase().includes("adminmode");
+
   newMessage = "";
   sendMessagePending = false;
-  messageHistory = [] as Array<{ key: number, msg: ChatMessage }>;
+  messageHistory = [] as ChatMessage[];
 
   beforeMount() {
     this.chatService = new ChatService(appSettings.backendApiBaseUrl);
-    this.chatService.addMessageListener(this.receiveMessage);
+    this.chatService.addMessageListener({ method: ChatServiceMethod.SendMessage, listener: this.receiveMessage });
+    this.chatService.addMessageListener({ method: ChatServiceMethod.DeleteMessage, listener: this.clearMessage });
   }
 
   destroy() {
@@ -32,21 +35,36 @@ export default class ChatComponent extends Vue {
   }
 
   receiveMessage(msg: ChatMessage) {
-    this.messageHistory.unshift({
-      key: new Date().valueOf(),
-      msg
-    });
+    this.messageHistory.unshift(msg);
+  }
+
+  clearMessage(cmd: ChatDeletionCommand) {
+    const idx = this.messageHistory.findIndex(m => m.messageId === cmd.messageId)
+    if (idx >= 0) {
+      this.messageHistory.splice(idx, 1);
+    }
+  }
+
+  adminDeleteMessage(msg: ChatMessage) {
+    if (!this.adminMode) return;
+    this.chatService?.deleteMessage(msg.messageId);
   }
 
   async sendMessage() {
-    if(!this.user) return;
+    if (!this.user) return;
     this.sendMessagePending = true;
-    await this.chatService?.sendMessage({
-      username: this.user.username,
-      avatarId: this.user.avatarId,
-      message: this.newMessage
-    });
-    this.newMessage = "";
+    try {
+      await this.chatService?.sendMessage({
+        username: this.user.username,
+        avatarId: this.user.avatarId,
+        message: this.newMessage
+      });
+      this.newMessage = "";
+    } catch (err) {
+      if (err.message) {
+        alert(err.message);
+      }
+    }
     this.sendMessagePending = false;
   }
 
@@ -131,14 +149,15 @@ input {
 
       <transition-group name="scale-fade" tag="div"
                         class="p-3 d-flex flex-column-reverse overflow-auto">
-        <div class="d-flex align-items-end" v-for="item in messageHistory" :key="item.key"
-             :class="getChatRowClasses(item.msg, user)">
-        <img :src="require(`../assets/avatars/${getAvatarFile(item.msg)}`)"
-             height="80" width="80" class="circle" />
+        <div class="d-flex align-items-end" v-for="item in messageHistory" :key="item.messageId"
+             :class="getChatRowClasses(item, user)">
+          <img :src="require(`../assets/avatars/${getAvatarFile(item)}`)"
+               height="80" width="80" class="circle" />
           <div class="alert alert-primary mb-1 p-2"
-               :class="getChatBubbleClasses(item.msg, user)">
-            <p class="mb-1">{{item.msg.message}}</p>
-            <p class="mb-0"><em><small>Sent by: {{item.msg.username}}</small></em></p>
+               :class="getChatBubbleClasses(item, user)"
+               @dblclick="adminDeleteMessage(item)">
+            <p class="mb-1">{{item.message}}</p>
+            <p class="mb-0"><em><small>Sent by: {{item.username}}</small></em></p>
           </div>
         </div>
       </transition-group>

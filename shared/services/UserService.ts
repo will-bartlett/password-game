@@ -20,7 +20,7 @@ export class UserService {
 
     public async updateUser(username: string, newProperties: Partial<User>) {
         const existingUser = await this.retrieveUser(username);
-        if(!existingUser) {
+        if (!existingUser) {
             throw new Error("Unable to locate existing user information.");
         }
         const user = {
@@ -52,9 +52,9 @@ export class UserService {
             && user.securityAnswers[questionKey]
             && user.securityAnswers[questionKey] === this.hashValue(questionAnswer);
     }
-    
+
     public async resetPassword(username: string, questionKey: string, questionAnswer: string, newPassword: string) {
-        if(!await this.verifySecurityAnswer(username, questionKey, questionAnswer)) {
+        if (!await this.verifySecurityAnswer(username, questionKey, questionAnswer)) {
             throw new Error("Incorrect security question answer.");
         }
         const user = await this.retrieveUser(username);
@@ -72,17 +72,25 @@ export class UserService {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(user)
         });
-        if(!resp.ok) {
+        let body: string;
+        if (!resp.ok) {
+            if (resp.status === 409 && (body = await resp.text())) {
+                throw new Error(body);
+            }
             throw new Error("Failure while persisting user to remote store.")
         }
     }
 
     private async retrieveUser(username: string) {
         const resp = await fetch(this.getApiUrl("getUser", { username }));
-        if(!resp.ok) {
-            if(resp.status === 404) {
+        if (!resp.ok) {
+            let body: string;
+            if (resp.status === 404) {
                 return null;
-            } else {
+            } else if (resp.status === 409 && (body = await resp.text())) {
+                throw new Error(body);
+            }
+            else {
                 throw new Error("Failure while getting user from remote store.");
             }
         }
