@@ -22,6 +22,7 @@ export default class ChatComponent extends Vue {
   newMessage = "";
   sendMessagePending = false;
   messageHistory = [] as ChatMessage[];
+  throttleSecondsRemaining = 0;
 
   beforeMount() {
     this.chatService = new ChatService(appSettings.backendApiBaseUrl);
@@ -50,8 +51,19 @@ export default class ChatComponent extends Vue {
     this.chatService?.deleteMessage(msg.messageId);
   }
 
+  decrementThrottleTimeout() {
+    this.throttleSecondsRemaining--;
+
+    if (this.throttleSecondsRemaining > 0)
+    {
+      setTimeout(() => this.decrementThrottleTimeout(), 1000);
+    }
+  }
+
   async sendMessage() {
     if (!this.user) return;
+    if (this.sendMessagePending || this.throttleSecondsRemaining) return;
+
     this.sendMessagePending = true;
     try {
       await this.chatService?.sendMessage({
@@ -65,7 +77,10 @@ export default class ChatComponent extends Vue {
         alert(err.message);
       }
     }
+
     this.sendMessagePending = false;
+    this.throttleSecondsRemaining = 5;
+    setTimeout(() => this.decrementThrottleTimeout(), 1000);
   }
 
   getAvatarFile(msg: ChatMessage) {
@@ -171,7 +186,8 @@ input {
         <button type="submit" class="btn btn-primary" style="width:12em"
                 :disabled="!newMessage" @click.prevent="sendMessage">
           <b-spinner v-if="sendMessagePending" label="Loading" variant="light" small />
-          <span v-if="!sendMessagePending">Send message</span>
+          <span v-if="!sendMessagePending && throttleSecondsRemaining">{{throttleSecondsRemaining}}</span>
+          <span v-if="!sendMessagePending && !throttleSecondsRemaining">Send message</span>
         </button>
       </form>
     </div>

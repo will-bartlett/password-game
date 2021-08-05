@@ -52,7 +52,7 @@ To setup the GitHub Actions project deployment workflow for automated deployment
 
 Note the service principal's appId, name, password, and tenant for use in the following steps.
 ```bash
-# Create Service Principal 
+# Create Service Principal
 az ad sp create-for-rbac --name http://YOUR_SERVICE_PRINCIPAL_NAME
 ```
 
@@ -63,14 +63,14 @@ Note the storage account name for use in step 4.
 ```bash
 # Create Resource Group
 az group create -n YOUR_RESOURCE_GROUP_NAME -l westus2
- 
+
 # Create Storage Account
 az storage account create -n YOUR_STORAGE_ACCOUNT_NAME -g YOUR_RESOURCE_GROUP_NAME --sku Standard_LRS
- 
+
 # Create Storage Account Container
 az storage container create -n tfstate --account-name YOUR_STORAGE_ACCOUNT_NAME
 
-# Assign the Serivce Principal access
+# Assign the Service Principal access
 az role assignment create --assignee http://YOUR_SERVICE_PRINCIPAL_NAME --role Contributor -g YOUR_RESOURCE_GROUP_NAME
 ```
 
@@ -84,7 +84,7 @@ Note the resource group name for use in step 4.
 # Create Resource Group
 az group create -n YOUR_RESOURCE_GROUP_NAME -l westus2
 
-# Assign the Serivce Principal access
+# Assign the Service Principal access
 az role assignment create --assignee http://YOUR_SERVICE_PRINCIPAL_NAME --role Contributor -g YOUR_RESOURCE_GROUP_NAME
 ```
 4. **Add the following secrets to your GitHub repository** ([GitHub docs](https://docs.github.com/en/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository)):
