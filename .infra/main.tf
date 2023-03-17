@@ -55,7 +55,6 @@ resource "azurerm_service_plan" "main_plan" {
   name                = "${local.service_prefix}-apps-${random_string.service_suffix.id}"
   location            = azurerm_resource_group.main_rg.location
   resource_group_name = azurerm_resource_group.main_rg.name
-  reserved            = true
   os_type             = "Linux"
   sku_name            = "B1"
 }
