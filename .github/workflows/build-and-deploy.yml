@@ -23,13 +23,19 @@ env:
   AZURE_TFSTATE_STORAGE_ACCOUNT: ${{ secrets.AZURE_TFSTATE_STORAGE_ACCOUNT }}
   PUSH_BRANCH: ${{ (github.event_name == 'push') && github.ref_name }}
   PR_BRANCH: ${{ (github.event_name == 'pull_request') && github.base_ref }}
-  GITHUB_ENVIRONMENT: ${{ ((github.event_name == 'push') && ((github.ref_name == 'main') && 'Main' || 'Backup')) || ((github.event_name == 'pull_request') && ((github.base_ref == 'main') && 'Main' || 'Backup')) || github.event.inputs.githubEnv }}
+  GITHUB_ENVIRONMENT: ${{
+    ((github.event_name == 'push')          && ((github.ref_name == 'main' || github.ref_name == 'backup') && github.ref_name || 'Beta')) ||
+    ((github.event_name == 'pull_request')  && ((github.base_ref == 'main' || github.base_ref == 'backup') && github.base_ref || 'Beta')) ||
+    github.event.inputs.githubEnv }}
 
 jobs:
   terraform:
     name: Terraform Plan/Apply
     runs-on: ubuntu-latest
-    environment: ${{ ((github.event_name == 'push') && ((github.ref_name == 'main') && 'Main' || 'Backup')) || ((github.event_name == 'pull_request') && ((github.base_ref == 'main') && 'Main' || 'Backup')) || github.event.inputs.githubEnv }}
+    environment: ${{
+      ((github.event_name == 'push')          && ((github.ref_name == 'main' || github.ref_name == 'backup') && github.ref_name || 'Beta')) ||
+      ((github.event_name == 'pull_request')  && ((github.base_ref == 'main' || github.base_ref == 'backup') && github.base_ref || 'Beta')) ||
+      github.event.inputs.githubEnv }}
     env:
       AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
     defaults:
