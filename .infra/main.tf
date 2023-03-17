@@ -11,7 +11,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">=2.55.0, < 2.71.0"
+      version = "~>3.48.0"
     }
   }
 }
@@ -51,36 +51,33 @@ resource "azurerm_storage_account" "main_storage" {
   access_tier              = "Hot"
 }
 
-resource "azurerm_app_service_plan" "main_plan" {
+resource "azurerm_service_plan" "main_plan" {
   name                = "${local.service_prefix}-apps-${random_string.service_suffix.id}"
   location            = azurerm_resource_group.main_rg.location
   resource_group_name = azurerm_resource_group.main_rg.name
-  kind                = "Linux"
-  reserved            = true
-
-  sku {
-    tier = "Basic"
-    size = "B1"
-  }
+  os_type             = "Linux"
+  sku_name            = "B1"
 }
 
-resource "azurerm_app_service" "cat_game" {
+resource "azurerm_linux_web_app" "cat_game" {
   name                = "${local.service_prefix}-cat-game-${random_string.service_suffix.id}"
   location            = azurerm_resource_group.main_rg.location
   resource_group_name = azurerm_resource_group.main_rg.name
-  app_service_plan_id = azurerm_app_service_plan.main_plan.id
+  service_plan_id     = azurerm_service_plan.main_plan.id
   https_only          = true
+  site_config {}
   app_settings = {
     "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.main_ai.instrumentation_key
   }
 }
 
-resource "azurerm_app_service" "dog_game" {
+resource "azurerm_linux_web_app" "dog_game" {
   name                = "${local.service_prefix}-dog-game-${random_string.service_suffix.id}"
   location            = azurerm_resource_group.main_rg.location
   resource_group_name = azurerm_resource_group.main_rg.name
-  app_service_plan_id = azurerm_app_service_plan.main_plan.id
+  service_plan_id     = azurerm_service_plan.main_plan.id
   https_only          = true
+  site_config {}
   app_settings = {
     "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.main_ai.instrumentation_key
   }
@@ -90,7 +87,7 @@ resource "azurerm_function_app" "backend_api" {
   name                       = "${local.service_prefix}-backend-api-${random_string.service_suffix.id}"
   location                   = azurerm_resource_group.main_rg.location
   resource_group_name        = azurerm_resource_group.main_rg.name
-  app_service_plan_id        = azurerm_app_service_plan.main_plan.id
+  app_service_plan_id        = azurerm_service_plan.main_plan.id
   storage_account_name       = azurerm_storage_account.main_storage.name
   storage_account_access_key = azurerm_storage_account.main_storage.primary_access_key
   os_type                    = "linux"
@@ -107,8 +104,8 @@ resource "azurerm_function_app" "backend_api" {
     linux_fx_version = "node|14-lts"
     cors {
       allowed_origins = [
-        "https://${azurerm_app_service.cat_game.default_site_hostname}",
-        "https://${azurerm_app_service.dog_game.default_site_hostname}",
+        "https://${azurerm_linux_web_app.cat_game.default_hostname}",
+        "https://${azurerm_linux_web_app.dog_game.default_hostname}",
       ]
       support_credentials = true
     }
@@ -128,15 +125,12 @@ resource "azurerm_signalr_service" "chat_service" {
 
   cors {
     allowed_origins = [
-      "https://${azurerm_app_service.cat_game.default_site_hostname}",
-      "https://${azurerm_app_service.dog_game.default_site_hostname}",
+      "https://${azurerm_linux_web_app.cat_game.default_hostname}",
+      "https://${azurerm_linux_web_app.dog_game.default_hostname}",
     ]
   }
 
-  features {
-    flag  = "ServiceMode"
-    value = "Serverless"
-  }
+  service_mode = "Serverless"
 }
 
 output "app_insights_instrumentation_key" {
@@ -145,11 +139,11 @@ output "app_insights_instrumentation_key" {
 }
 
 output "cat_game_app_service_name" {
-  value = azurerm_app_service.cat_game.name
+  value = azurerm_linux_web_app.cat_game.name
 }
 
 output "dog_game_app_service_name" {
-  value = azurerm_app_service.dog_game.name
+  value = azurerm_linux_web_app.dog_game.name
 }
 
 output "backend_api_func_app_name" {
