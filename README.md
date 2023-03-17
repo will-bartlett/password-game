@@ -48,44 +48,41 @@ To setup the GitHub Actions project deployment workflow for automated deployment
 
 (These commands use the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/get-started-with-azure-cli).)
 
-1. **Create a service principal for Terraform deployment:**
-
-Note the service principal's appId, name, password, and tenant for use in the following steps.
-```bash
-# Create Service Principal
-az ad sp create-for-rbac --name http://YOUR_SERVICE_PRINCIPAL_NAME
-```
-
-2. **Create a storage account where Terraform state will be saved:**
+1. **Create a storage account where Terraform state will be saved:**
 
 Note the storage account name for use in step 4.
 
 ```bash
 # Create Resource Group
-az group create -n YOUR_RESOURCE_GROUP_NAME -l westus2
+az group create -n PwdControlGroup -l westus2
 
 # Create Storage Account
-az storage account create -n YOUR_STORAGE_ACCOUNT_NAME -g YOUR_RESOURCE_GROUP_NAME --sku Standard_LRS
+az storage account create -n pwdcontrolstorage -g PwdControlGroup --sku Standard_LRS
 
 # Create Storage Account Container
-az storage container create -n tfstate --account-name YOUR_STORAGE_ACCOUNT_NAME
+az storage container create -n tfstate --account-name pwdcontrolstorage
+```
 
-# Assign the Service Principal access
-az role assignment create --assignee http://YOUR_SERVICE_PRINCIPAL_NAME --role Contributor -g YOUR_RESOURCE_GROUP_NAME
+2. **Create a service principal for Terraform deployment:**
+
+Note the service principal's appId, name, password, and tenant for use in the following steps.
+```bash
+# Create Service Principal and assign it access
+az ad sp create-for-rbac --display-name "Pwd Control App" --role Contributor --scopes /subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/PwdControlGroup
 ```
 
 3. **Create a resource group where the solution will be deployed:**
 
-_Use a different resource group name than step 2 otherwise the Terraform deployment will break._
+_Use a different resource group name than step 1 otherwise the Terraform deployment will break._
 
 Note the resource group name for use in step 4.
 
 ```bash
 # Create Resource Group
-az group create -n YOUR_RESOURCE_GROUP_NAME -l westus2
+az group create -n PwdGameGroup -l westus2
 
 # Assign the Service Principal access
-az role assignment create --assignee http://YOUR_SERVICE_PRINCIPAL_NAME --role Contributor -g YOUR_RESOURCE_GROUP_NAME
+az role assignment create --assignee YOUR_SERVICE_PRINCIPAL_APPID --role Contributor --scope /subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/PwdGameGroup
 ```
 4. **Add the following secrets to your GitHub repository** ([GitHub docs](https://docs.github.com/en/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository)):
 
