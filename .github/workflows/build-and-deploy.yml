@@ -21,15 +21,15 @@ env:
   ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
   AZURE_TFSTATE_RESOURCE_GROUP: ${{ secrets.AZURE_TFSTATE_RESOURCE_GROUP }}
   AZURE_TFSTATE_STORAGE_ACCOUNT: ${{ secrets.AZURE_TFSTATE_STORAGE_ACCOUNT }}
-  PUSH_BRANCH: ${{ (github.event_name == 'push') && ((github.ref_name == 'main') && 'Main' || 'Backup') }}
-  PR_BRANCH: ${{ (github.event_name == 'pull_request') && ((github.base_ref == 'main') && 'Main' || 'Backup') }}
+  PUSH_BRANCH: ${{ (github.event_name == 'push') && github.ref_name }}
+  PR_BRANCH: ${{ (github.event_name == 'pull_request') && github.base_ref }}
   GITHUB_ENVIRONMENT: ${{ ((github.event_name == 'push') && ((github.ref_name == 'main') && 'Main' || 'Backup')) || ((github.event_name == 'pull_request') && ((github.base_ref == 'main') && 'Main' || 'Backup')) || github.event.inputs.githubEnv }}
 
 jobs:
   terraform:
     name: Terraform Plan/Apply
     runs-on: ubuntu-latest
-    environment: env.GITHUB_ENVIRONMENT
+    environment: ${{ env.GITHUB_ENVIRONMENT }}
     env:
       AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
     defaults:
