@@ -23,13 +23,12 @@ env:
   AZURE_TFSTATE_STORAGE_ACCOUNT: ${{ secrets.AZURE_TFSTATE_STORAGE_ACCOUNT }}
   PUSH_BRANCH: ${{ (github.event_name == 'push') && ((github.ref == 'refs/heads/main') && 'Main' || 'Backup') }}
   PR_BRANCH: ${{ (github.event_name == 'pull_request') && ((github.base_ref == 'refs/heads/main') && 'Main' || 'Backup') }}
-  GITHUB_ENVIRONMENT: ${{ env.PUSH_BRANCH || env.PR_BRANCH || github.event.inputs.githubEnv }}
 
 jobs:
   terraform:
     name: Terraform Plan/Apply
     runs-on: ubuntu-latest
-    environment: env.GITHUB_ENVIRONMENT
+    environment: ${{ env.PUSH_BRANCH || env.PR_BRANCH || github.event.inputs.githubEnv }}
     env:
       AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
     defaults:
