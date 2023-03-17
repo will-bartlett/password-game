@@ -29,7 +29,7 @@ jobs:
   terraform:
     name: Terraform Plan/Apply
     runs-on: ubuntu-latest
-    environment: ${{ env.GITHUB_ENVIRONMENT }}
+    environment: ${{ ((github.event_name == 'push') && ((github.ref_name == 'main') && 'Main' || 'Backup')) || ((github.event_name == 'pull_request') && ((github.base_ref == 'main') && 'Main' || 'Backup')) || github.event.inputs.githubEnv }}
     env:
       AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
     defaults:
