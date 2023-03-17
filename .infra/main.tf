@@ -83,25 +83,25 @@ resource "azurerm_linux_web_app" "dog_game" {
   }
 }
 
-resource "azurerm_function_app" "backend_api" {
+resource "azurerm_linux_function_app" "backend_api" {
   name                       = "${local.service_prefix}-backend-api-${random_string.service_suffix.id}"
   location                   = azurerm_resource_group.main_rg.location
   resource_group_name        = azurerm_resource_group.main_rg.name
-  app_service_plan_id        = azurerm_service_plan.main_plan.id
+  service_plan_id            = azurerm_service_plan.main_plan.id
   storage_account_name       = azurerm_storage_account.main_storage.name
   storage_account_access_key = azurerm_storage_account.main_storage.primary_access_key
-  os_type                    = "linux"
   https_only                 = true
   app_settings = {
-    "FUNCTIONS_WORKER_RUNTIME"       = "node",
     "NODE_ENV"                       = "production",
-    "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.main_ai.instrumentation_key
     "StorageAccountConnectionString" = azurerm_storage_account.main_storage.primary_connection_string
     "SignalRConnectionString"        = azurerm_signalr_service.chat_service.primary_connection_string
   }
   site_config {
-    always_on        = true
-    linux_fx_version = "node|14-lts"
+    always_on = true
+    application_insights_key = azurerm_application_insights.main_ai.instrumentation_key
+    application_stack {
+      node_version = 14
+    }
     cors {
       allowed_origins = [
         "https://${azurerm_linux_web_app.cat_game.default_hostname}",
@@ -110,7 +110,6 @@ resource "azurerm_function_app" "backend_api" {
       support_credentials = true
     }
   }
-  version = "~3"
 }
 
 resource "azurerm_signalr_service" "chat_service" {
@@ -147,9 +146,9 @@ output "dog_game_app_service_name" {
 }
 
 output "backend_api_func_app_name" {
-  value = azurerm_function_app.backend_api.name
+  value = azurerm_linux_function_app.backend_api.name
 }
 
 output "backend_api_func_app_hostname" {
-  value = azurerm_function_app.backend_api.default_hostname
+  value = azurerm_linux_function_app.backend_api.default_hostname
 }
