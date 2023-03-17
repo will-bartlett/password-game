@@ -59,23 +59,25 @@ resource "azurerm_service_plan" "main_plan" {
   sku_name            = "B1"
 }
 
-resource "azurerm_app_service" "cat_game" {
+resource "azurerm_linux_web_app" "cat_game" {
   name                = "${local.service_prefix}-cat-game-${random_string.service_suffix.id}"
   location            = azurerm_resource_group.main_rg.location
   resource_group_name = azurerm_resource_group.main_rg.name
-  app_service_plan_id = azurerm_service_plan.main_plan.id
+  service_plan_id     = azurerm_service_plan.main_plan.id
   https_only          = true
+  site_config {}
   app_settings = {
     "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.main_ai.instrumentation_key
   }
 }
 
-resource "azurerm_app_service" "dog_game" {
+resource "azurerm_linux_web_app" "dog_game" {
   name                = "${local.service_prefix}-dog-game-${random_string.service_suffix.id}"
   location            = azurerm_resource_group.main_rg.location
   resource_group_name = azurerm_resource_group.main_rg.name
-  app_service_plan_id = azurerm_service_plan.main_plan.id
+  service_plan_id     = azurerm_service_plan.main_plan.id
   https_only          = true
+  site_config {}
   app_settings = {
     "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.main_ai.instrumentation_key
   }
@@ -102,8 +104,8 @@ resource "azurerm_function_app" "backend_api" {
     linux_fx_version = "node|14-lts"
     cors {
       allowed_origins = [
-        "https://${azurerm_app_service.cat_game.default_site_hostname}",
-        "https://${azurerm_app_service.dog_game.default_site_hostname}",
+        "https://${azurerm_linux_web_app.cat_game.default_site_hostname}",
+        "https://${azurerm_linux_web_app.dog_game.default_site_hostname}",
       ]
       support_credentials = true
     }
@@ -123,8 +125,8 @@ resource "azurerm_signalr_service" "chat_service" {
 
   cors {
     allowed_origins = [
-      "https://${azurerm_app_service.cat_game.default_site_hostname}",
-      "https://${azurerm_app_service.dog_game.default_site_hostname}",
+      "https://${azurerm_linux_web_app.cat_game.default_site_hostname}",
+      "https://${azurerm_linux_web_app.dog_game.default_site_hostname}",
     ]
   }
 
@@ -137,11 +139,11 @@ output "app_insights_instrumentation_key" {
 }
 
 output "cat_game_app_service_name" {
-  value = azurerm_app_service.cat_game.name
+  value = azurerm_linux_web_app.cat_game.name
 }
 
 output "dog_game_app_service_name" {
-  value = azurerm_app_service.dog_game.name
+  value = azurerm_linux_web_app.dog_game.name
 }
 
 output "backend_api_func_app_name" {
