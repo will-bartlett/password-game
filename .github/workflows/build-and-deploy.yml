@@ -21,7 +21,7 @@ env:
   ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
   AZURE_TFSTATE_RESOURCE_GROUP: ${{ secrets.AZURE_TFSTATE_RESOURCE_GROUP }}
   AZURE_TFSTATE_STORAGE_ACCOUNT: ${{ secrets.AZURE_TFSTATE_STORAGE_ACCOUNT }}
-  GITHUB_ENVIRONMENT: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' && 'Main' || 'Backup') : (github.event_name == 'pull_request' && (github.base_ref == 'refs/heads/main' && 'Main' || 'Backup') || github.event.inputs.githubEnv) }}
+  GITHUB_ENVIRONMENT: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' && 'Main' || 'Backup') || (github.event_name == 'pull_request' && (github.base_ref == 'refs/heads/main' && 'Main' || 'Backup') || github.event.inputs.githubEnv) }}
 
 jobs:
   terraform:
