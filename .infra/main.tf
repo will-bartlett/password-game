@@ -104,7 +104,7 @@ resource "azurerm_function_app" "backend_api" {
   }
   site_config {
     always_on        = true
-    linux_fx_version = "node|lts"
+    linux_fx_version = "node|14-lts"
     cors {
       allowed_origins = [
         "https://${azurerm_app_service.cat_game.default_site_hostname}",
