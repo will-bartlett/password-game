@@ -5,7 +5,7 @@ locals {
 terraform {
   backend "azurerm" {
     container_name = "tfstate"
-    key            = "pwdgame-state"
+    key            = "${var.github_env}-state"
     # Remaining parameters from '-backend-config' arguments
   }
   required_providers {

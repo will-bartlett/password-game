@@ -4,6 +4,7 @@ on:
     branches:
       - main
       - backup
+      - wibartle
   pull_request:
     branches:
       - main
@@ -19,7 +20,7 @@ env:
   ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
   ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
   ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-  AZURE_TFSTATE_RESOURCE_GROUP: ${{ secrets.AZURE_TFSTATE_RESOURCE_GROUP }}
+  AZURE_TFSTATE_RESOURCE_GROUP: ${{ vars.AZURE_TFSTATE_RESOURCE_GROUP }}
   AZURE_TFSTATE_STORAGE_ACCOUNT: ${{ secrets.AZURE_TFSTATE_STORAGE_ACCOUNT }}
   GITHUB_ENVIRONMENT: ${{
     ((github.event_name == 'push')          && ((github.ref_name == 'main' || github.ref_name == 'backup') && github.ref_name || 'Beta')) ||
@@ -35,7 +36,7 @@ jobs:
       ((github.event_name == 'pull_request')  && ((github.ref_name == 'main' || github.ref_name == 'backup') && github.ref_name || 'Beta')) ||
       github.event.inputs.githubEnv }}
     env:
-      AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+      AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
     defaults:
       run:
         working-directory: ./.infra
@@ -69,12 +70,14 @@ jobs:
         continue-on-error: true
         run: |
           terraform import \
+              -var "github_env=${{ env.GITHUB_ENVIRONMENT }}" \
               -var "azure_resource_group_name=${{ env.AZURE_RESOURCE_GROUP }}" -lock=false \
               azurerm_resource_group.main_rg /subscriptions/${{ env.ARM_SUBSCRIPTION_ID }}/resourceGroups/${{ env.AZURE_RESOURCE_GROUP }}
       - name: Terraform Plan
         id: plan
         run: |
             terraform plan -no-color -lock=false -out=tfplan \
+              -var "github_env=${{ env.GITHUB_ENVIRONMENT }}" \
               -var "azure_resource_group_name=${{ env.AZURE_RESOURCE_GROUP }}"
       - name: Terraform Apply
         id: apply
