@@ -3,18 +3,23 @@ on:
   push:
     branches:
       - main
+      - backup
   pull_request:
     branches:
       - main
+      - backup
   workflow_dispatch:
-
+    inputs:
+      githubEnv:
+        description: "Github Environment"
+        required: true
+        default: Beta
 env:
   ARM_ENVIRONMENT: public
   ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
   ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
   ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
   ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-  AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
   AZURE_TFSTATE_RESOURCE_GROUP: ${{ secrets.AZURE_TFSTATE_RESOURCE_GROUP }}
   AZURE_TFSTATE_STORAGE_ACCOUNT: ${{ secrets.AZURE_TFSTATE_STORAGE_ACCOUNT }}
 
@@ -22,6 +27,9 @@ jobs:
   terraform:
     name: Terraform Plan/Apply
     runs-on: ubuntu-latest
+    environment: "${(github.event_name == 'push') ? ((github.ref == 'refs/heads/main') ? 'Main' : 'Backup') : ((github.event_name == 'pull_request' && github.event.action == 'closed') ? ((github.base_ref == 'refs/heads/main') ? 'Main' : 'Backup') : github.event.inputs.githubEnv)}"
+    env:
+      AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
     defaults:
       run:
         working-directory: ./.infra
