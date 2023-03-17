@@ -104,8 +104,8 @@ resource "azurerm_function_app" "backend_api" {
     linux_fx_version = "node|14-lts"
     cors {
       allowed_origins = [
-        "https://${azurerm_linux_web_app.cat_game.default_site_hostname}",
-        "https://${azurerm_linux_web_app.dog_game.default_site_hostname}",
+        "https://${azurerm_linux_web_app.cat_game.default_hostname}",
+        "https://${azurerm_linux_web_app.dog_game.default_hostname}",
       ]
       support_credentials = true
     }
@@ -125,8 +125,8 @@ resource "azurerm_signalr_service" "chat_service" {
 
   cors {
     allowed_origins = [
-      "https://${azurerm_linux_web_app.cat_game.default_site_hostname}",
-      "https://${azurerm_linux_web_app.dog_game.default_site_hostname}",
+      "https://${azurerm_linux_web_app.cat_game.default_hostname}",
+      "https://${azurerm_linux_web_app.dog_game.default_hostname}",
     ]
   }
 
