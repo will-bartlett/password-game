@@ -1,4 +1,4 @@
-import sha256 from 'crypto-js/sha256';
+const crypto = require('crypto');
 import { User, UserWithSecurityAttrs } from "../models/User";
 
 export class UserService {
@@ -9,10 +9,13 @@ export class UserService {
         if ((await this.retrieveUser(user.username)) !== null) {
             throw new Error("That username is already taken.");
         }
-        Object.keys(securityAnswers).forEach(k => securityAnswers[k] = this.hashValue(securityAnswers[k]));
+        var salt = crypto.randomBytes(32);
+        Object.keys(securityAnswers).forEach(k => securityAnswers[k] = this.hashValue(securityAnswers[k], salt));
+
         const userWithPass: UserWithSecurityAttrs = {
             ...user,
-            passwordHash: this.hashValue(password),
+            passwordHash: this.hashValue(password, salt),
+            salt: salt,
             securityAnswers: securityAnswers
         }
         await this.persistUser(userWithPass);
@@ -32,7 +35,7 @@ export class UserService {
 
     public async loginUser(username: string, password: string) {
         const user = await this.retrieveUser(username);
-        if (!user || user.passwordHash !== this.hashValue(password)) {
+        if (!user || user.passwordHash !== this.hashValue(password, user.salt)) {
             throw new Error("Invalid username or password!")
         }
         return user as User
@@ -50,7 +53,7 @@ export class UserService {
         const user = await this.retrieveUser(username);
         return user?.securityAnswers
             && user.securityAnswers[questionKey]
-            && user.securityAnswers[questionKey] === this.hashValue(questionAnswer);
+            && user.securityAnswers[questionKey] === this.hashValue(questionAnswer, user.salt);
     }
 
     public async resetPassword(username: string, questionKey: string, questionAnswer: string, newPassword: string) {
@@ -58,7 +61,7 @@ export class UserService {
             throw new Error("Incorrect security question answer.");
         }
         const user = await this.retrieveUser(username);
-        user!.passwordHash = this.hashValue(newPassword);
+        user!.passwordHash = this.hashValue(newPassword, user!.salt);
         await this.persistUser(user!);
         return user! as User;
     }
@@ -97,8 +100,8 @@ export class UserService {
         return (await resp.json()) as UserWithSecurityAttrs;
     }
 
-    private hashValue(password: string) {
-        return sha256(password).toString();
+    private hashValue(password: string, salt: string) {
+        return crypto.pbkdf2Sync(password, salt, 10_000, 32, 'sha256');
     }
 
     private getApiUrl(path: string, queryParams: { [param: string]: string } = {}) {

@@ -6,7 +6,8 @@ export interface User {
 }
 
 export interface UserWithSecurityAttrs extends User {
-    passwordHash: string,
+    passwordHash: string;
+    salt: string;
     securityAnswers: { [key: string]: string };
 }
 
@@ -28,6 +29,7 @@ export function UserFromTableEntity(user: UserAsTableEntity): UserWithSecurityAt
         username: user.username,
         avatarId: user.avatarId,
         passwordHash: user.passwordHash,
+        salt: user.salt,
         securityAnswers: JSON.parse(user.securityAnswers)
     }
 }
