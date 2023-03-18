@@ -40,7 +40,9 @@ popd
 
 ## Automated deployment
 
-The solution will be automatically deployed using GitHub actions when a push or completed pull request to the `main` branch occurs.
+The solution is aware of three environments: `Main`, `Backup`, and `Beta`. The `main` branch deploys to `Main`, the `backup` branch deploys to `Backup`, and all other configured branches deploy to `Beta`.
+
+The deployment structure uses one resource group for the control plane, and then one resource group per environment. If you fork this project, you need only set up a single environment.
 
 ### GitHub workflow setup
 
@@ -65,13 +67,38 @@ az storage container create -n tfstate --account-name pwdcontrolstorage
 
 2. **Create a service principal for Terraform deployment:**
 
-Note the service principal's appId, name, password, and tenant for use in the following steps.
+Note the service principal's appId and tenant for use in the following steps.
+
 ```bash
-# Create Service Principal and assign it access
-az ad sp create-for-rbac --display-name "Pwd Control App" --role Contributor --scopes /subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/PwdControlGroup
+az ad app create --display-name "PwdGame Github Actions Runner"
 ```
 
-3. **Create a resource group where the solution will be deployed:**
+Create a file `credential.json` replacing ENV_NAME for each environment you are setting up:
+
+```json
+{
+    "audiences": [ "api://AzureADTokenExchange" ],
+    "description": "Github actions federated credential for ENV_NAME environment",
+    "issuer": "https://token.actions.githubusercontent.com",
+    "name": "Dev",
+    "subject": "repo:organization/repository:environment:ENV_NAME"
+}
+```
+
+And create the federated credential based on this file:
+
+```bash
+az ad app federated-credential create --id YOUR_DEPLOYMENT_APPID --parameters credential.json
+```
+
+Finally, assign create a service principal for this app in your tenant and assign this service principal a role for the control plane resource group:
+
+```bash
+az ad sp create --id YOUR_DEPLOYMENT_APPID
+az role assignment create --assignee YOUR_DEPLOYMENT_APPID --role Contributor --scope /subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/PwdControlGroup
+```
+
+3. **Create a resource group for each environment where the solution will be deployed:**
 
 _Use a different resource group name than step 1 otherwise the Terraform deployment will break._
 
@@ -82,14 +109,25 @@ Note the resource group name for use in step 4.
 az group create -n PwdGameGroup -l westus2
 
 # Assign the Service Principal access
-az role assignment create --assignee YOUR_SERVICE_PRINCIPAL_APPID --role Contributor --scope /subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/PwdGameGroup
+az role assignment create --assignee YOUR_DEPLOYMENT_APPID --role Contributor --scope /subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/PwdGameGroup
 ```
-4. **Add the following secrets to your GitHub repository** ([GitHub docs](https://docs.github.com/en/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository)):
+
+Do this for each environment you want to create.
+
+4. **Add the following secrets and variables to your GitHub repository and environments** ([GitHub docs](https://docs.github.com/en/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository)):
+
+Create a github environment per deployment environment..
+
+Repository secrets:
 
 - `ARM_TENANT_ID`: Your Azure AD tenant ID
 - `ARM_CLIENT_ID`: Your service principal app ID
-- `ARM_CLIENT_SECRET`: Your service principal password
 - `ARM_SUBSCRIPTION_ID`: Your Azure subscription ID
-- `AZURE_TFSTATE_RESOURCE_GROUP`: The resource group name you created in step 2
 - `AZURE_TFSTATE_STORAGE_ACCOUNT`: The storage account you created in step 2
+
+Repository environment variables:
+- `AZURE_TFSTATE_RESOURCE_GROUP`: The resource group name you created in step 2
+
+Environment environment variables:
 - `AZURE_RESOURCE_GROUP`: The resource group name you created in step 3
+

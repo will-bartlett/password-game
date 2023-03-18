@@ -14,23 +14,23 @@ on:
 env:
   ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
   ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
   ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-  GITHUB_ENVIRONMENT: ${{
-    ((github.event_name == 'push')          && ((github.ref_name == 'main' || github.ref_name == 'backup') && github.ref_name || 'Beta')) ||
-    github.event.inputs.githubEnv }}
+  ARM_USE_OIDC: true
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   terraform:
     name: Terraform Plan/Apply
     runs-on: ubuntu-latest
-    environment: ${{
-      ((github.event_name == 'push')          && ((github.ref_name == 'main' || github.ref_name == 'backup') && github.ref_name || 'Beta')) ||
-      github.event.inputs.githubEnv }}
+    environment: ${{ ((github.event_name == 'push') && ((github.ref_name == 'main' || github.ref_name == 'backup') && github.ref_name || 'Beta')) || github.event.inputs.githubEnv }}
     env:
       AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
       AZURE_TFSTATE_RESOURCE_GROUP: ${{ vars.AZURE_TFSTATE_RESOURCE_GROUP }}
       AZURE_TFSTATE_STORAGE_ACCOUNT: ${{ secrets.AZURE_TFSTATE_STORAGE_ACCOUNT }}
+      GITHUB_ENVIRONMENT: ${{ ((github.event_name == 'push') && ((github.ref_name == 'main' || github.ref_name == 'backup') && github.ref_name || 'Beta')) || github.event.inputs.githubEnv }}
     defaults:
       run:
         working-directory: ./.infra
@@ -41,11 +41,10 @@ jobs:
       backend_api_func_app_name: ${{ steps.tf_output.outputs.backend_api_func_app_name }}
       backend_api_func_app_hostname: ${{ steps.tf_output.outputs.backend_api_func_app_hostname }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: hashicorp/setup-terraform@v1
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v2
         with:
           terraform_wrapper: false
-          terraform_version: 1.0.3
       - name: Terraform fmt
         id: fmt
         continue-on-error: true
@@ -65,12 +64,12 @@ jobs:
         continue-on-error: true
         run: |
           terraform import \
-              -var "azure_resource_group_name=${{ env.AZURE_RESOURCE_GROUP }}" -lock=false \
+              -var "azure_resource_group_name=${{ env.AZURE_RESOURCE_GROUP }}" \
               azurerm_resource_group.main_rg /subscriptions/${{ env.ARM_SUBSCRIPTION_ID }}/resourceGroups/${{ env.AZURE_RESOURCE_GROUP }}
       - name: Terraform Plan
         id: plan
         run: |
-            terraform plan -no-color -lock=false -out=tfplan \
+            terraform plan -no-color -out=tfplan \
               -var "azure_resource_group_name=${{ env.AZURE_RESOURCE_GROUP }}"
       - name: Terraform Apply
         id: apply
@@ -78,21 +77,22 @@ jobs:
       - name: Terraform Output
         id: tf_output
         run: |
-          echo "::set-output name=app_insights_instrumentation_key::$(terraform output -raw app_insights_instrumentation_key)"
-          echo "::set-output name=cat_game_app_service_name::$(terraform output -raw cat_game_app_service_name)"
-          echo "::set-output name=dog_game_app_service_name::$(terraform output -raw dog_game_app_service_name)"
-          echo "::set-output name=backend_api_func_app_name::$(terraform output -raw backend_api_func_app_name)"
-          echo "::set-output name=backend_api_func_app_hostname::$(terraform output -raw backend_api_func_app_hostname)"
+          echo "app_insights_instrumentation_key=$(terraform output -raw app_insights_instrumentation_key)" >> "$GITHUB_OUTPUT"
+          echo "cat_game_app_service_name=$(terraform output -raw cat_game_app_service_name)" >> "$GITHUB_OUTPUT"
+          echo "dog_game_app_service_name=$(terraform output -raw dog_game_app_service_name)" >> "$GITHUB_OUTPUT"
+          echo "backend_api_func_app_name=$(terraform output -raw backend_api_func_app_name)" >> "$GITHUB_OUTPUT"
+          echo "backend_api_func_app_hostname=$(terraform output -raw backend_api_func_app_hostname)" >> "$GITHUB_OUTPUT"
 
   deploy-api:
     name: Build/Deploy Backend API
     needs: terraform
     runs-on: ubuntu-latest
+    environment: ${{ ((github.event_name == 'push') && ((github.ref_name == 'main' || github.ref_name == 'backup') && github.ref_name || 'Beta')) || github.event.inputs.githubEnv }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: 14
       - name: Build shared
         working-directory: ./shared
         run: |
@@ -106,13 +106,9 @@ jobs:
       - name: Azure Login
         uses: azure/login@v1
         with:
-          creds: |
-            {
-              "clientId": "${{ env.ARM_CLIENT_ID }}",
-              "clientSecret": "${{ env.ARM_CLIENT_SECRET }}",
-              "subscriptionId": "${{ env.ARM_SUBSCRIPTION_ID }}",
-              "tenantId": "${{ env.ARM_TENANT_ID }}"
-            }
+          client-id: ${{ env.ARM_CLIENT_ID }}
+          tenant-id: ${{ env.ARM_TENANT_ID }}
+          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
       - name: Overwrite local dependency symlink with actual content
         run: |
           rm ./backend-api/node_modules/@pwdgame/shared
@@ -127,11 +123,12 @@ jobs:
     name: Build/Deploy Apps
     needs: terraform
     runs-on: ubuntu-latest
+    environment: ${{ ((github.event_name == 'push') && ((github.ref_name == 'main' || github.ref_name == 'backup') && github.ref_name || 'Beta')) || github.event.inputs.githubEnv }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: 14
       - name: Build shared
         working-directory: ./shared
         run: |
@@ -164,13 +161,9 @@ jobs:
       - name: Azure Login
         uses: azure/login@v1
         with:
-          creds: |
-            {
-              "clientId": "${{ env.ARM_CLIENT_ID }}",
-              "clientSecret": "${{ env.ARM_CLIENT_SECRET }}",
-              "subscriptionId": "${{ env.ARM_SUBSCRIPTION_ID }}",
-              "tenantId": "${{ env.ARM_TENANT_ID }}"
-            }
+          client-id: ${{ env.ARM_CLIENT_ID }}
+          tenant-id: ${{ env.ARM_TENANT_ID }}
+          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
       - name: Deploy cat-game
         uses: azure/webapps-deploy@v2
         with:
