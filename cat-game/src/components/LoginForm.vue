@@ -39,7 +39,11 @@ export default class LoginForm extends Vue {
       );
       if (this.setUserCallback) this.setUserCallback(user);
     } catch (err) {
-      this.errorMsg = err?.message || "Login failed.";
+      if (err instanceof Error) {
+        this.errorMsg = err.message || "Login failed.";
+      } else {
+        this.errorMsg = "Login failed unexpectedly."
+      }
     }
     this.submitPending = false;
   }

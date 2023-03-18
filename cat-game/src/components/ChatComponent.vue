@@ -73,8 +73,10 @@ export default class ChatComponent extends Vue {
       });
       this.newMessage = "";
     } catch (err) {
-      if (err.message) {
-        alert(err.message);
+      if (err instanceof Error) {
+        alert(err.message || "Send message failed");
+      } else {
+        alert("Send message failed unexpectedly.");
       }
     }
 

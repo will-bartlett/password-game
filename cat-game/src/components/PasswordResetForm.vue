@@ -57,7 +57,11 @@ export default class RegistrationForm extends Vue {
       );
       if (this.setUserCallback) this.setUserCallback(user);
     } catch (err) {
-      this.errorMsg = err?.message || "Password reset failed.";
+      if (err instanceof Error) {
+        this.errorMsg = err.message || "Password reset failed.";
+      } else {
+        this.errorMsg = "Password reset failed unexpectedly.";
+      }
     }
     this.submitPending = false;
   }

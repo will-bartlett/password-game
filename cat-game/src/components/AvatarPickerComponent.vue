@@ -42,7 +42,11 @@ export default class PasswordResetForm extends Vue {
       this.user.avatarId = avatarId;
       this.pickerOpen = false;
     } catch (err) {
-      alert(err.message);
+      if (err instanceof Error) {
+        alert (err.message || "Pick avatar failed");
+      } else {
+        alert("Pick avatar failed unexpectedly.");
+      }
     }
   }
 }

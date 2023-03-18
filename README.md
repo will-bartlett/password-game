@@ -9,8 +9,8 @@ You can run and debug the entire solution locally using Azure Functions tools an
 
 1. Install the [Azure Storage Emulator](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-emulator#get-the-storage-emulator).
 2. Install the [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=windows%2Ccsharp%2Cbash#install-the-azure-functions-core-tools).
-3. Install [NodeJS LTS](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=windows%2Ccsharp%2Cbash#install-the-azure-functions-core-tools).
-4. Install [Visual Studio Code]().
+3. Install [NodeJS](https://nodejs.org/).
+4. Install [Visual Studio Code](https://code.visualstudio.com/).
 
 ### Get a SignalR instance
 

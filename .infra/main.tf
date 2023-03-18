@@ -97,7 +97,7 @@ resource "azurerm_linux_function_app" "backend_api" {
     always_on = true
     application_insights_key = azurerm_application_insights.main_ai.instrumentation_key
     application_stack {
-      node_version = 14
+      node_version = 18
     }
     cors {
       allowed_origins = [

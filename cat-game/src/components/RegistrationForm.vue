@@ -55,7 +55,11 @@ export default class PasswordResetForm extends Vue {
       await userService.createUser(user, this.password, this.securityAnswers);
       if (this.setUserCallback) this.setUserCallback(user);
     } catch (err) {
-      this.errorMsg = err?.message || "Registration failed.";
+      if (err instanceof Error) {
+        this.errorMsg = err.message || "Registration failed.";
+      } else {
+        this.errorMsg = "Registration failed unexpectedly."
+      }
     }
     this.submitPending = false;
   }
