@@ -9,7 +9,7 @@ You can run and debug the entire solution locally using Azure Functions tools an
 
 1. Install the [Azure Storage Emulator](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-emulator#get-the-storage-emulator).
 2. Install the [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=windows%2Ccsharp%2Cbash#install-the-azure-functions-core-tools).
-3. Install [NodeJS](https://nodejs.org/).
+3. Install [NodeJS](https://nodejs.org/). (Note: please refer the version compatibility between NodeJS ad Azure function, refer link [here](https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference-node?tabs=javascript%2Cwindows%2Cazure-cli&pivots=nodejs-model-v4#supported-versions))
 4. Install [Visual Studio Code](https://code.visualstudio.com/).
 
 ### Get a SignalR instance
@@ -32,11 +32,26 @@ popd
 ```
 
 ### Run the solution
-
 1. Start the Azure Storage Emulator by launching it from the start menu. An icon will appear in the taskbar.
-2. In VS Code, start the `backend-api` by choosing `Debug backend-api` from the Run and Debug tab and pressing the green arrow button.
-3. In VS Code, start the `cat-game` app by choosing `Debug cat-game` from the Run and Debug tab and pressing the green arrow button.
-4. In VS Code, start the `dog-game` app by choosing `Debug dog-game` from the Run and Debug tab and pressing the green arrow button.
+
+#### From VS Code
+
+1. In VS Code, start the `backend-api` by choosing `Debug backend-api` from the Run and Debug tab and pressing the green arrow button.
+2. In VS Code, start the `cat-game` app by choosing `Debug cat-game` from the Run and Debug tab and pressing the green arrow button.
+3. In VS Code, start the `dog-game` app by choosing `Debug dog-game` from the Run and Debug tab and pressing the green arrow button.
+
+#### From powershell
+
+1. cd to src\password-game\backend-api folder, run 'npm install', then 'npm run start' to start backend-api project.
+2. cd to src\password-game\cat-game folder, run 'npm install', then 'npm run serve' to start cat-game project with http://localhost:8080/.
+3. cd to src\password-game\dog-game folder, run 'npm install', then 'npm run serve' to start dog-game project with http://localhost:8081/.
+
+### SignalR Configuration
+
+1. After above 3 projects are all started, if you receive below error message in the cat-game chat room while sending message. Pleaes configure your SignalR to Serverless by refer link [here](https://learn.microsoft.com/en-us/azure/azure-signalr/concept-service-mode#setting-the-service-mode).
+```
+Server returned handshake error: SignalR Service is now in 'Default' service mode. Current mode works as a proxy that routes client traffic to the connected app servers. However app servers are not connected.
+```
 
 ## Automated deployment
 
